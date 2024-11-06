@@ -1,22 +1,226 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Weather Journal</title>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <div id="app">
-      <input id="zip" class="myInput" type="text" placeholder="Enter Zip Code Here" />
-      <textarea id="feelings" class="myInput" rows="4" cols="50" placeholder="How are you feeling today?"></textarea>
-      <button id="generate" class="myButton">Generate</button>
-      <div id="entryHolder">
-        <div id="date"></div>
-        <div id="temp"></div>
-        <div id="content"></div>
-      </div>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نموذج حجز الطلاب</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* إعدادات الصفحة العامة */
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(to right, #74ebd5, #9face6); /* خلفية متدرجة */
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2); /* ظل خفيف للنص */
+        }
+
+        /* إعدادات الزر */
+        .button-container {
+            margin-top: 20px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            border-radius: 50px; /* زوايا دائرية بالكامل */
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* ظل الزر */
+        }
+
+        button.cancel {
+            background-color: #dc3545;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px); /* رفع الزر قليلاً عند التحويم */
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* ظل أعمق عند التحويم */
+        }
+
+        /* إعدادات النافذة المنبثقة */
+        .modal {
+            display: none; /* مخفي بشكل افتراضي */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8); /* خلفية شفافة */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        /* إعدادات محتوى النافذة */
+        .modal-content {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 480px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        label {
+            font-size: 16px;
+            text-align: right;
+            margin-bottom: 10px;
+            display: block;
+            color: #555; /* لون النص */
+        }
+
+        input[type="text"], textarea {
+            width: calc(100% - 20px); /* خصم مساحة الحواف */
+            padding: 12px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            border-color: #007bff; /* تغيير لون الحدود عند التركيز */
+            outline: none;
+        }
+
+        textarea {
+            resize: vertical;
+            height: 100px;
+        }
+
+        /* إعدادات الرسالة الناجحة */
+        .success-message {
+            display: none; /* مخفي بشكل افتراضي */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8); /* خلفية شفافة */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .success-content {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .success-content i {
+            font-size: 60px;
+            color: #28a745;
+            margin-bottom: 10px;
+            animation: bounce 0.5s infinite alternate;
+        }
+
+        @keyframes bounce {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-10px); }
+        }
+
+        /* تحسينات عامة */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            button {
+                padding: 10px 20px;
+            }
+
+            .modal-content, .success-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>بوابة الطلاب</h1>
+
+    <div class="button-container">
+        <button onclick="openModal()">حجز</button>
     </div>
-    <script src="app.js"></script>
-  </body>
+
+    <!-- النافذة المنبثقة (Modal) -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h2>نموذج الحجز</h2>
+            <form onsubmit="return submitForm(event)">
+                <label for="student-name">اسم الطالب:</label>
+                <input type="text" id="student-name" name="student-name" placeholder="أدخل اسمك هنا" required>
+
+                <label for="student-description">وصف عن نفسك:</label>
+                <textarea id="student-description" name="student-description" placeholder="أدخل وصفاً هنا" required></textarea>
+
+                <div class="button-container">
+                    <button type="submit">تأكيد الحجز</button>
+                    <button type="button" class="cancel" onclick="closeModal()">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- رسالة النجاح -->
+    <div id="success-message" class="success-message">
+        <div class="success-content">
+            <i class="fas fa-check-circle"></i>
+            <h2>تم إرسال طلبك بنجاح!</h2>
+            <button onclick="closeSuccessMessage()">إغلاق</button>
+        </div>
+    </div>
+
+    <script>
+        // دالة لفتح النافذة المنبثقة
+        function openModal() {
+            document.getElementById("modal").style.display = "flex";
+        }
+
+        // دالة لإغلاق النافذة المنبثقة
+        function closeModal() {
+            document.getElementById("modal").style.display = "none";
+        }
+
+        // دالة لتقديم النموذج
+        function submitForm(event) {
+            event.preventDefault(); // منع إعادة تحميل الصفحة
+            closeModal(); // إغلاق نافذة النموذج
+            document.getElementById("success-message").style.display = "flex"; // عرض رسالة النجاح
+            return false; // لمنع إعادة تحميل الصفحة
+        }
+
+        // دالة لإغلاق رسالة النجاح
+        function closeSuccessMessage() {
+            document.getElementById("success-message").style.display = "none"; // إخفاء رسالة النجاح
+        }
+    </script>
+
+</body>
 </html>
+
